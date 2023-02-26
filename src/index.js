@@ -1,17 +1,51 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import {Provider, useDispatch, useSelector} from 'react-redux'
+import store from './store/store';
+import { marked } from 'marked';
+import ToolBar from './bar';
+
+
+function App() {
+  const dispatch = useDispatch();
+  const area = useSelector(state => state.state.area);
+  const edit = useSelector(state => state.screen.edit);
+  const preview = useSelector(state => state.screen.preview);
+
+  const handleStyleEdit = (s) => {
+    const styles = {
+      maxWidth: '90vw',
+    }
+    return s === 'normal' ? {} : styles;
+  }
+
+  const handleTextArea = () => {
+    return edit === 'normal' ? '10' : '30';
+  }
+  const handleChange = (e) => dispatch({ type: `CHANGE`, payload: e.target.value });
+
+  return (
+    <>
+      <div className='editorContainer' style={handleStyleEdit(edit)}>
+        <ToolBar screenName='edit' stateScreen={edit} />
+        <textarea id='editor' onChange={handleChange} value={area} rows={handleTextArea()}></textarea>
+      </div>
+      <div className='previewerContainer' style={handleStyleEdit(preview)}>
+        <ToolBar screenName='preview' stateScreen={preview} />
+        <div id='preview' dangerouslySetInnerHTML={{ __html: marked(area)}} />
+      </div>
+    </>
+  );
+}
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
+  <Provider store={store}>
     <App />
-  </React.StrictMode>
+  </Provider>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+marked.setOptions({
+  breaks: true,
+});
